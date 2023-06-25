@@ -1,4 +1,5 @@
 ﻿using Linq1.Data;
+using Linq1.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -55,6 +56,60 @@ namespace Linq1.Controllers
             return Ok(name);
 
         }
+        [HttpGet("Query4")]
+        public IActionResult Query4()
+        {
+            var Query4 = (
+          from c in clubdb.Courses
+          join f in clubdb.Faculties on c.FacultyId equals f.Id into newlist
+          from n in newlist.DefaultIfEmpty()
+          select new
+          {
+              CourseName = c.Title,
+              FacultyName = n.Name
+          }
+          ).ToList();
+            var name = from q in Query4 select q;
+            return Ok(name);
+
         }
+        [HttpGet("Query5")]
+        public IActionResult Query5()
+        {
+            var Query5= clubdb.Courses.ToList();
+            var name = from q in Query5 orderby q.Credits descending select q;
+            return Ok(Query5);
+        }
+        [HttpGet("Query6")]
+        public IActionResult Query6()
+        {
+            var Query6 = (
+            from c in clubdb.Courses
+            join f in clubdb.Faculties on c.FacultyId equals f.Id
+            join i in clubdb.Instructors on f.SupervisorId equals i.Id into newlist
+            from n in newlist.DefaultIfEmpty()
+            select new
+            {
+                CourseName = c.Title,
+                InstructorName = n.Name
+            }
+        ).ToList();
+            var countbycourse = (
+            from q in Query6
+            group q by q.CourseName into g
+            select new
+            {
+             CourseName = g.Key,
+             InstructorCount = g.Count()
+            }
+        ).ToList();
+
+            var result = from q in countbycourse select q;
+
+            return Ok(result);
+
+
+        }
+    }
     }
 
