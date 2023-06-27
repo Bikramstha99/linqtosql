@@ -226,7 +226,7 @@ namespace Linq1.Controllers
         public IActionResult Query13()
         {
 
-            var Query12 = (
+            var Query13 = (
         from s in clubdb.Students
         join cl in clubdb.Clubs on s.ClubId equals cl.Serial into newlist
         from n in newlist.DefaultIfEmpty()
@@ -237,7 +237,7 @@ namespace Linq1.Controllers
             clubname=n.Entitle
         }).ToList();
 
-            var name1 = from q in Query12
+            var name1 = from q in Query13
                         join e in clubdb.Enrollments on q.studentid equals e.StudentId into newlist
                         from n in newlist.DefaultIfEmpty()
                         select new
@@ -271,7 +271,7 @@ namespace Linq1.Controllers
             return Ok(name);
 
         }
-        [HttpGet]
+        [HttpGet("Query14")]
         public IActionResult Query14()
         {
             var Query12 = (
@@ -280,25 +280,47 @@ namespace Linq1.Controllers
         from n in newlist.DefaultIfEmpty()
         select new
         {
+            studentid= s.Id,
             courseid = n.CourseId,
             studentname = s.Name,
             marks = n.Marks
         }
         ).ToList();
-            var name1 = from q in Query12
-                        join c in clubdb.Courses on q.courseid equals c.Id into newlist
-                        from n in newlist.DefaultIfEmpty()
+            var name = from q in Query12
+                       group q by q.studentname into newlist
+                       select new
+                       {
+                           courseId= from q in newlist select q.courseid,
+                           studentname = from q in newlist select q.studentname,
+                           maxmark = (from q in newlist select q.marks).Max(),
+                           minmarks = (from q in newlist select q.marks).Min(),
+                       };
+            var name1 = from q in name
+                        join e in clubdb.Enrollments on q.maxmark equals e.Marks
+                        join c in clubdb.Courses on e.CourseId equals c.Id into g
                         select new
                         {
-                            Coursename=n.Title,
                             studentname = q.studentname,
-                            maxmarks = (from q in Query12 select q.marks).Max(),
-                            minmarks = (from q in Query12 select q.marks).Min(),
-                            avgmarks=(from q in Query12 select q.marks).Average(),
-                        };
-            
+                            maxmarks = q.maxmark,
+                            minmarks = q.minmarks,
+                            highsubject = from q in g select q.Title,
 
-            return Ok(name1);
+
+                        };
+            var name2 = from q in name1
+                        join e in clubdb.Enrollments on q.minmarks equals e.Marks
+                        join c in clubdb.Courses on e.CourseId equals c.Id into g
+                        select new
+                        {
+                            studentname = q.studentname,
+                            maxmarks = q.maxmarks,
+                            minmarks = q.minmarks,
+                            highsubject =q.highsubject,
+                            lowsubject=from q in g select q.Title,
+
+
+                        };
+            return Ok(name2);
         }
 
     }
