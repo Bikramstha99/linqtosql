@@ -14,5 +14,10 @@ namespace Linq1.Data
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<Instructor> Instructors{ get; set; }
         public DbSet<Student> Students { get; set; }
+        public DbSet<CourseAssignments> CourseAssignments { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<CourseAssignments>().HasNoKey();
+        }
     }
 }
